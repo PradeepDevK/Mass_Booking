@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="UTF-8">
+        <script type="text/javascript" src="./assets/js/jquery-1.11.1.min.js"></script>
+        <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Open+Sans'>
+        <script type="text/javascript" src="./node_modules/jquery/dist/jquery.min.js"></script>
+        <script type="text/javascript" src="./node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+        <link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.min.css">
+
+        <title>Mass Booking</title>
+    </head>
+
+    <body>
+
+        <nav class="navbar navbar-inverse navbar-static-top" role="navigation">
+            <div class="container">
+                <div class="navbar-header">
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <a href="#" onclick="window.location.href='index.html'" data-toggle="modal" data-target="#logoutModal">logout</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 col-md-offset-3">
+                    <div class="well well-sm">
+                         <form class="form-horizontal" action="" method="post">
+                             <fieldset>
+                                 <legend class="text-center">Mass Booking</legend>
+
+                                 <!-- Serial No-->
+                                 <div class="form-group">
+                                     <label class="col-md-3 control-label" for="name">Serial No:</label>
+                                     <div class="col-md-9">
+                                         <input id="serialNo" name="serialNo" type="text" readonly
+                                             class="form-control">
+                                     </div>
+                                 </div>
+
+                                  <!-- Current Date-->
+                                  <div class="form-group">
+                                      <label class="col-md-3 control-label" for="name">Date:</label>
+                                      <div class="col-md-9">
+                                          <input id="currentDate" name="currentDate" type="text" readonly
+                                              class="form-control">
+                                      </div>
+                                  </div>
+
+                                  <!-- Mass Booking Date -->
+                                  <div class="form-group">
+                                      <label class="col-md-12 control-label" for="name">Mass Booking Date:</label>
+                                      <div class="col-md-9">
+                                          <input id="bookingDate" name="bookingDate" type="date"
+                                              class="form-control" onclick="getBookingDay()"
+                                              onchange="getBookingDay(),calcMassOfferedBy()">
+                                      </div>
+
+                                      <label class="col-md-3 control-label" for="name">Mass Time:</label>
+                                      <div class="col-md-9">
+                                          <input id="bookingTime" name="bookingTime" type="time" class="form-control">
+                                      </div>
+
+                                       <label class="col-md-3 control-label" for="name">Mass Day:</label>
+                                       <div class="col-md-9">
+                                           <input id="bookingDay" name="bookingDay" type="text" readonly class="form-control">
+                                       </div>
+                                  </div>
+
+                                   <!--Mass Offered By-->
+                                   <div class="form-group">
+                                       <label class="col-md-3 control-label" for="name">Mass Offered By:</label>
+                                       <div class="col-md-9">
+                                           <input id="massOfferedBy" name="massOfferedBy" type="text" readonly
+                                               class="form-control">
+                                       </div>
+                                   </div>
+
+                                   <!--Intentionsy-->
+                                   <div class="form-group">
+                                       <label class="col-md-3 control-label" for="name">Mass Offered By:</label>
+                                       <div class="col-md-9">
+                                            <select id="massIntentions" class="form-control">
+                                                <option>Type1</option>
+                                                <option>Type2</option>
+                                            </select>
+                                       </div>
+                                   </div>
+
+                                   <!-- Form actions -->
+                                   <div class="form-group">
+                                       <div class="col-md-9 text-right">
+                                           <button type="button" class="btn btn-success btn-lg btn-block" onclick="saveBooking()">Print this page</button>
+                                           <button type="button" class="btn btn-info btn-lg btn-block" onclick="window.location.href='view.html'">View Report</button>
+                                       </div>
+                                   </div>
+                             </fieldset>
+                         </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            'use strict';
+
+            //Generate Serial Number
+            let chars = '1234567890',
+                serialLength = 10,
+                randomSerial = "",
+                i,
+                randomNumber;
+
+            for (i = 0; i < serialLength; i = i + 1) { 
+                randomNumber = Math.floor(Math.random() * chars.length); 
+                randomSerial += chars.substring(randomNumber, randomNumber + 1); 
+            }
+
+            console.log(randomSerial);
+            document.getElementById('serialNo').value = randomSerial;
+
+            //Current Date
+            let currentDate = new Date();
+
+            console.log(currentDate.getFullYear()+"/"+parseInt(currentDate.getMonth() + 1) +"/"+ currentDate.getDate());
+            document.getElementById("currentDate").value = currentDate.getFullYear() + "-" + parseInt(currentDate.getMonth() + 1) + "-" + currentDate.getDate();
+
+            //Date Picker
+            let currentDateFormat = currentDate.getFullYear() + "-" + ('0' + parseInt(currentDate.getMonth() + 1)) + "-" + currentDate.getDate();
+            document.getElementById("bookingDate").value = currentDateFormat;
+            document.getElementById("bookingDate").min = currentDateFormat;
+
+            //Day followed by the date picker
+            let weekdays = [ 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            let bookingDate1 = new Date(document.getElementById("bookingDate").value);
+            console.log(bookingDate1.getDay());
+            document.getElementById("bookingDay").value = weekdays[bookingDate1.getDay()];
+
+            function getBookingDay() {                
+                let bookingDate2 = new Date(document.getElementById("bookingDate").value);
+                console.log(bookingDate2.getDay());
+                document.getElementById("bookingDay").value = weekdays[bookingDate2.getDay()];
+            }
+
+            //Mass Offered By
+            let bookingDay = document.getElementById("bookingDay").value;
+            if (bookingDay !== 'Sunday') {
+                document.getElementById("massOfferedBy").value = 120;
+            } else {
+                document.getElementById("massOfferedBy").value = 180;
+            }
+
+            function calcMassOfferedBy() {
+                let bookingDay = document.getElementById("bookingDay").value;
+                if (bookingDay !== 'Sunday') {
+                    document.getElementById("massOfferedBy").value = 120;
+                } else {
+                    document.getElementById("massOfferedBy").value = 180;
+                }
+            }
+
+            //Store booking details
+            function saveBooking() {
+                let mysql = require('mysql');
+                let config = require("./db-config");
+
+                // Add the credentials to access your database
+                let connection = mysql.createConnection(config.db);
+
+                // connect to mysql
+                connection.connect(function (err) {
+                    // in case of error
+                    if (err) {
+                        console.log(err.code);
+                        console.log(err.fatal);
+                    }
+                    console.log('DB Connected')
+                });
+
+                // Perform a query
+                let booking_serial_no = document.getElementById('serialNo').value;
+                let booking_date = document.getElementById('bookingDate').value;
+                let booking_time = document.getElementById('bookingTime').value;
+                let booking_day = document.getElementById('bookingDay').value;
+                let booking_offered_by = document.getElementById('massOfferedBy').value;
+                let booking_intentions = document.getElementById('massIntentions').value;
+
+                let $query = "INSERT INTO booking_details (booking_serial_no, booking_date, booking_time, booking_day, booking_offered_by, booking_intentions) values(?,?,?,?,?,?)";
+                $query = mysql.format($query, [booking_serial_no, booking_date, booking_time, booking_day, booking_offered_by, booking_intentions]);
+
+                connection.query($query, function (err, rows, fields) {
+                    if (err) {
+                        console.log("An error occurred performing the query.");
+                        console.log(err);
+                        return;
+                    }
+
+                    console.log("Query successfully executed");
+
+                    if (rows.length === 0) {
+                        isUnauthorized = true;
+                        console.log("Query successfully executed");
+                        displayNotification('Error!', 'Unauthorized');
+                        return
+                    }
+                });
+
+                // Close the connection
+                connection.end(function () {
+                    // The connection has been closed
+                    console.log("Connection has been closed");
+                        
+                    // display notification
+                    displayNotification('Done!', 'New booking stored successfully');
+                    window.location.href='booking.html'
+                });
+            }
+
+            function displayNotification(titleValue, notificationValue) {
+                const notification = {
+                    title: titleValue,
+                    body: notificationValue
+                }
+
+                const myNotification = new window.Notification(notification.title, notification)
+            }
+        </script>
+    </body>
+</html>

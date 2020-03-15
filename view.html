@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="UTF-8">
+        <script type="text/javascript" src="./assets/js/jquery-1.11.1.min.js"></script>
+        <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Open+Sans'>
+        <script type="text/javascript" src="./node_modules/jquery/dist/jquery.min.js"></script>
+        <script type="text/javascript" src="assets/js/jquery.dataTables.min.js"></script>
+        <script type="text/javascript" src="assets/js/dataTables.bootstrap.js"></script>
+        <script type="text/javascript" src="./node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="./node_modules/bootstrap-table/dist/bootstrap-table.min.js"></script>
+        <link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="./node_modules/bootstrap-table/dist/bootstrap-table.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css">
+        <link rel='stylesheet' href="./assets/css/dataTables.bootstrap.css">
+        <title>ViewBookingHistory</title>
+
+        <style>
+            .pagination>li {
+                display: inline;
+                padding:0px !important;
+                margin:0px !important;
+                border:none !important;
+            }
+            .modal-backdrop {
+                z-index: -1 !important;
+            }
+            /*
+            Fix to show in full screen demo
+            */
+            iframe
+            {
+                height:700px !important;
+            }
+
+            .btn {
+                display: inline-block;
+                padding: 6px 12px !important;
+                margin-bottom: 0;
+                font-size: 14px;
+                font-weight: 400;
+                line-height: 1.42857143;
+                text-align: center;
+                white-space: nowrap;
+                vertical-align: middle;
+                -ms-touch-action: manipulation;
+                touch-action: manipulation;
+                cursor: pointer;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+                background-image: none;
+                border: 1px solid transparent;
+                border-radius: 4px;
+            }
+
+            .btn-primary {
+                color: #fff !important;
+                background: #428bca !important;
+                border-color: #357ebd !important;
+                box-shadow:none !important;
+            }
+            .btn-danger {
+                color: #fff !important;
+                background: #d9534f !important;
+                border-color: #d9534f !important;
+                box-shadow:none !important;
+            }
+        </style>
+    </head>
+
+    <body>
+
+        <nav class="navbar navbar-default">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a href="#" onclick="window.location.href='index.html'">logout</a>
+                </div>
+                <ul class="nav navbar-nav">
+                    <li><input type="button" id="action-btn" value="Show Booking List" /></li>
+                    <li><input type="button" value="Create New Booking"                             onclick="window.location.href='booking.html'" /></li>
+                </ul>
+            </div>
+        </nav>
+
+        <div class="container">            
+
+            <div class="row">
+
+                <div class="col-md-12">
+                    <table id="datatable" class="table table-striped table-bordered" cellspacing="0" width="100%">
+                        <thead></thead>
+                        <tfoot></tfoot>
+                        <tbody></tbody>
+                    </table>
+                </div>                        
+            </div> 
+        </div>
+
+        <div class="modal fade" id="edit" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title custom_align" id="Heading">Edit Booking Detail</h4>
+                        <button id= "closeEditModal" type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>                        
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="col-md-3 control-label" for="name">Serial No:</label>
+                            <input class="form-control " type="text" readonly id="editSerialNo">
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-3 control-label" for="name">Mass Booking Date:</label>
+                            <input name="bookingDate" type="date"
+                                              class="form-control" id="editBookingDate" onclick="getBookingDay()"
+                                              onchange="getBookingDay(),calcMassOfferedBy()">
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-3 control-label" for="name">Mass Time:</label>
+                            <input id="editBookingTime" name="bookingTime" type="time" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-3 control-label" for="name">Mass Day:</label>
+                            <input id="editBookingDay" name="bookingDay" type="text" readonly class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-3 control-label" for="name">Mass Offered By:</label>
+                            <input id="editMassOfferedBy" name="massOfferedBy" type="text" readonly class="form-control">
+                        </div>
+                         <div class="form-group">
+                             <label class="col-md-3 control-label" for="name">Intensions:</label>
+                             <select id="editMassIntentions" class="form-control">
+                                 <option>Type1</option>
+                                 <option>Type2</option>
+                             </select>
+                         </div>
+                    </div>
+                    <div class="modal-footer ">
+                        <button type="button" class="btn btn-warning btn-lg" style="width: 100%;" onclick="editMassBooking()"><span class="glyphicon glyphicon-ok-sign"></span> Update</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="modal fade" id="delete" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title custom_align" id="Heading">Delete Data</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-danger"><i class="fa fa-exclamation-triangle"></i> Are you sure you want to delete BookingId <label id="deleteSerialNo"></label> ? </div>
+                        
+                    </div>
+                    <div class="modal-footer ">
+                        <button type="button" id="del" class="btn btn-danger" onclick="deleteBooking()"><i
+                                class="far fa-check-circle"></i> Yes</button>
+                        <button type="button" id="closeDel" class="btn btn-default" data-dismiss="modal"><i class="fas fa-times-circle"></i> No</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <script type="text/javascript">
+            var mysql = require('mysql');
+            var moment = require('moment');
+            var $ = require( 'jquery' );
+            require( 'datatables.net' )( window, $ );
+
+            function el(selector) {
+                return document.getElementById(selector);
+            }
+
+            el('action-btn').addEventListener('click', function () {
+                // Get the mysql service
+                getFirstTenRows(function (rows) {
+                    var html = '';
+
+                    let id = 0;
+                    rows.forEach(function (row) {
+                        id += 1;
+                        html += '<tr>';
+                        html += '<td>';
+                        html += row.booking_serial_no;
+                        html += '</td>';
+                        html += '<td>';
+                        html += moment(row.booking_date).format('YYYY-MM-DD');
+                        html += '</td>';
+                        html += '<td>';
+                        html += row.booking_time;
+                        html += '</td>';
+                        html += '<td>';
+                        html += row.booking_day;
+                        html += '</td>';
+                        html += '<td>';
+                        html += row.booking_offered_by;
+                        html += '</td>';
+                        html += '<td>';
+                        html += row.booking_intentions;
+                        html += '</td>';
+                        html += '<td><button id="editrow" class="btn btn-primary btn-xs" data-title="Edit" data-toggle="modal" data-target="#edit" ><i class="fas fa-pencil-alt"></i></button></td>';
+                        html += '<td><button id="deleterow" class="btn btn-danger btn-xs" data-title="Delete" data-toggle="modal" data-target="#delete" ><i class="fas fa-trash-alt"></i></span></button></td>';
+                        html += '</tr>';
+                        console.log(row);
+                    });
+
+                    document.querySelector('#datatable > tbody').innerHTML = html;
+                    document.querySelector('#datatable > thead').innerHTML = '<tr><th data-field= "SerialNo" scope="col">SerialNo</th> <th scope="col">Date</th> <th scope="col">Time</th> <th scope="col">Day</th> <th scope="col">Offered By</th> <th scope="col">Intentions</th><th>Edit</th><th>Delete</th></tr>';
+                    document.querySelector('#datatable > tfoot').innerHTML = '<tr><th scope="col">SerialNo</th> <th scope="col">Date</th> <th scope="col">Time</th> <th scope="col">Day</th> <th scope="col">Offered By</th> <th scope="col">Intentions</th><th>Edit</th><th>Delete</th></tr>';
+
+                });
+            }, false);
+
+            function displayNotification(titleValue, notificationValue) {
+                const notification = {
+                title: titleValue,
+                body: notificationValue
+                }
+
+                const myNotification = new window.Notification(notification.title, notification)
+            }
+
+            function getFirstTenRows(callback) {
+                var mysql = require('mysql');
+                var config = require("./db-config");
+
+                // Add the credentials to access your database
+                var connection = mysql.createConnection(config.db);
+
+                // connect to mysql
+                connection.connect(function (err) {
+                    // in case of error
+                    if (err) {
+                        console.log(err.code);
+                        console.log(err.fatal);
+                    }
+                });
+
+                // Perform a query
+                $query = 'SELECT booking_serial_no, booking_date, booking_time, booking_day, booking_offered_by, booking_intentions FROM booking_details ORDER BY id';
+
+                connection.query($query, function (err, rows, fields) {
+                    if (err) {
+                        console.log("An error ocurred performing the query.");
+                        console.log(err);
+                        return;
+                    }
+
+                    callback(rows);
+
+                    console.log("Query succesfully executed");
+                });
+
+                // Close the connection
+                connection.end(function () {
+                    // The connection has been closed
+                    $(document).ready(function () {
+                        $('#datatable').DataTable();
+                    });
+                });
+            }           
+            
+            let weekdays = [ 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+            function getBookingDay() {
+                let bookingDate2 = new Date(document.getElementById("editBookingDate").value);
+                console.log(bookingDate2.getDay());
+                document.getElementById("editBookingDay").value = weekdays[bookingDate2.getDay()];
+            }
+        
+            function calcMassOfferedBy() {
+                let bookingDay = document.getElementById("editBookingDay").value;
+                if (bookingDay !== 'Sunday') {
+                document.getElementById("editMassOfferedBy").value = 120;
+                } else {
+                document.getElementById("editMassOfferedBy").value = 180;
+                }
+            }
+
+            $(document).on("click","#datatable #editrow",function() {
+                document.getElementById('editSerialNo').value = $(this).closest("tr").find('td:eq(0)').text();
+
+                document.getElementById("editBookingDate").value = $(this).closest("tr").find('td:eq(1)').text();
+
+                document.getElementById("editBookingTime").value = $(this).closest("tr").find('td:eq(2)').text();
+
+                document.getElementById("editBookingDay").value = $(this).closest("tr").find('td:eq(3)').text();
+
+                document.getElementById("editMassOfferedBy").value = $(this).closest("tr").find('td:eq(4)').text();
+
+                document.getElementById("editMassIntentions").value = $(this).closest("tr").find('td:eq(5)').text();
+            });
+
+            function editMassBooking() {
+                let mysql = require('mysql');
+                let config = require("./db-config");
+
+                // Add the credentials to access your database
+                let connection = mysql.createConnection(config.db);
+
+                // connect to mysql
+                connection.connect(function (err) {
+                    // in case of error
+                    if (err) {
+                        console.log(err.code);
+                        console.log(err.fatal);
+                    }
+                    console.log('DB Connected')
+                });
+
+                // Perform a query
+                let booking_serial_no = document.getElementById('editSerialNo').value;
+                let booking_date = document.getElementById('editBookingDate').value;
+                let booking_time = document.getElementById('editBookingTime').value;
+                let booking_day = document.getElementById('editBookingDay').value;
+                let booking_offered_by = document.getElementById('editMassOfferedBy').value;
+                let booking_intentions = document.getElementById('editMassIntentions').value;
+
+                let $query = "UPDATE booking_details SET booking_date = ?, booking_time = ?, booking_day = ?, booking_offered_by = ?, booking_intentions = ? WHERE booking_serial_no = ?";
+                $query = mysql.format($query, [booking_date, booking_time, booking_day, booking_offered_by,
+                booking_intentions, booking_serial_no]);
+
+                connection.query($query, function (err, rows, fields) {
+                    if (err) {
+                        console.log("An error occurred performing the query.");
+                        console.log(err);
+                        return;
+                    }
+
+                    console.log("Query successfully executed");
+
+                    if (rows.length === 0) {
+                        isUnauthorized = true;
+                        console.log("Query successfully executed");
+                        displayNotification('Error!', 'Unauthorized');
+                        return
+                    }
+                });
+
+                // Close the connection
+                connection.end(function () {
+                    // The connection has been closed
+                    console.log("Connection has been closed");
+                        
+                    // display notification
+                    displayNotification('Done!', 'Updated Booking Detail('+ booking_serial_no +')');
+                    document.getElementById("closeEditModal").click();
+                    document.getElementById("action-btn").click();
+                });
+            }           
+        
+            $(document).on("click","#datatable #deleterow",function() {
+                console.log($(this).closest("tr").find('td:eq(0)').text())
+                document.getElementById('deleteSerialNo').innerHTML = $(this).closest("tr").find('td:eq(0)').text();
+            });
+
+            function deleteBooking() {
+                let mysql = require('mysql');
+                let config = require("./db-config");
+
+                // Add the credentials to access your database
+                let connection = mysql.createConnection(config.db);
+
+                // connect to mysql
+                connection.connect(function (err) {
+                    // in case of error
+                    if (err) {
+                        console.log(err.code);
+                        console.log(err.fatal);
+                    }
+                    console.log('DB Connected')
+                });
+
+                // Perform a query
+                let booking_serial_no = document.getElementById('deleteSerialNo').innerHTML;
+
+                let $query = "DELETE FROM booking_details WHERE booking_serial_no = ?";
+                $query = mysql.format($query, [booking_serial_no]);
+
+                connection.query($query, function (err, rows, fields) {
+                    if (err) {
+                        console.log("An error occurred performing the query.");
+                        console.log(err);
+                        return;
+                    }
+
+                    console.log("Query successfully executed");
+
+                    if (rows.length === 0) {
+                        isUnauthorized = true;
+                        console.log("Query successfully executed");
+                        displayNotification('Error!', 'Unauthorized');
+                        return
+                    }
+                });
+
+                // Close the connection
+                connection.end(function () {
+                    // The connection has been closed
+                    console.log("Connection has been closed");
+                        
+                    // display notification
+                    displayNotification('Done!', 'Delete Booking Detail('+ booking_serial_no +')');
+                    document.getElementById("closeDel").click();
+                    document.getElementById("action-btn").click();
+                });
+            }
+        </script>
+    </body>
+
+</html>

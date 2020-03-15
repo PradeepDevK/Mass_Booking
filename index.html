@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
+    <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Open+Sans'>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+    <div class="cont">
+        <div class="demo">
+            <div class="login">
+                <div class="login__check"></div>
+                <div class="login__form">
+                    <div class="login__row">
+                        <svg class="login__icon username svg-icon" viewBox="0 0 20 20">
+                            <path d="M0,20 a10,8 0 0,1 20,0z M10,0 a4,4 0 0,1 0,8 a4,4 0 0,1 0,-8" />
+                        </svg>
+                        <input type="text" class="login__input username" placeholder="Username"  id="username"/>
+                    </div>
+                    <div class="login__row">
+                        <svg class="login__icon pass svg-icon" viewBox="0 0 20 20">
+                            <path d="M0,20 20,20 20,8 0,8z M10,13 10,16z M4,8 a6,8 0 0,1 12,0" />
+                        </svg>
+                        <input type="password" class="login__input pass" placeholder="Password" id="password"/>
+                    </div>
+                    <button type="button" class="login__submit"
+                        onclick="loginUser()">Login</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function loginUser() {
+            var password = document.getElementById('password').value;
+            var username = document.getElementById('username').value;
+
+            if (password == '' || username == '') {
+                displayNotification('Error!', 'Values cannot be empty');
+                return
+            }
+
+            var mysql = require('mysql');
+            var config = require("./db-config");
+            var isUnauthorized = false;
+
+            // Add the credentials to access your database
+            var connection = mysql.createConnection(config.db);
+
+            // connect to mysql
+            connection.connect(function (err) {
+                // in case of error
+                if (err) {
+                    console.log(err.code);
+                    console.log(err.fatal);
+                }
+                console.log('DB Connected')
+            });
+
+            // Perform a query
+
+            $query = "SELECT * FROM login WHERE username ='"+ username +"' AND password ='"+ password +"'";
+
+            connection.query($query, function (err, rows, fields) {
+                if (err) {
+                    console.log("An error occurred performing the query.");
+                    console.log(err);
+                    return;
+                }
+
+                console.log("Query successfully executed");
+
+                if (rows.length === 0) {
+                    isUnauthorized = true;
+                    console.log("Query successfully executed");
+                    displayNotification('Error!', 'Unauthorized');
+                    return
+                }
+            });
+
+            // Close the connection
+            connection.end(function () {
+            // The connection has been closed
+                console.log("Connection has been closed");
+
+                if (!isUnauthorized) {
+                    // display notification
+                    displayNotification('Done!', 'You successfully logged in');
+                    window.location.href='booking.html'
+                }
+            });          
+        }
+
+        function displayNotification(titleValue, notificationValue) {
+            const notification = {
+                title: titleValue,
+                body: notificationValue
+            }
+
+            const myNotification = new window.Notification(notification.title, notification)
+        }
+    </script>
+
+</body>
+
+</html>
